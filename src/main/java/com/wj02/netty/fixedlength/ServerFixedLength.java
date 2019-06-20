@@ -1,15 +1,19 @@
-package com.wj01.netty;
+package com.wj02.netty.fixedlength;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.string.StringDecoder;
+
+import java.nio.charset.Charset;
 
 /**
  * 1.双线程组
  */
-public class ServerHelloWorld {
+public class ServerFixedLength {
 
     //监听线程组，监听客户端请求
     private EventLoopGroup acceptGroup = null;
@@ -19,7 +23,7 @@ public class ServerHelloWorld {
     private ServerBootstrap bootstrap = null;
 
 
-    public ServerHelloWorld() {
+    public ServerFixedLength() {
         init();
     }
 
@@ -62,7 +66,14 @@ public class ServerHelloWorld {
          */
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(acceptorHandlers);
+                ChannelHandler[] handlers = new ChannelHandler[3];
+                //定长Handler，通过参数设置消息长度（单位：字节）。发送的消息长度不足可以使用空格补全
+                /*使用这个注意依赖引入*/
+                handlers[0] = new FixedLengthFrameDecoder(3);
+                /*字符串解码器Handler，会自动处理ChannelRead方法的msg参数，将ByteBuf类型的数据转为字符*/
+                handlers[1] = new StringDecoder(Charset.forName("utf-8"));
+                handlers[2] = new ServerFixedLengthHandler();
+                socketChannel.pipeline().addLast(handlers);
             }
         });
         //bind方法，绑定监听端口的。ServerBootStrap可以绑定多个监听端口。多次调用bind方法即可
@@ -83,10 +94,10 @@ public class ServerHelloWorld {
 
     public static void main(String[] args) {
         ChannelFuture future = null;
-        ServerHelloWorld server = null;
+        ServerFixedLength server = null;
         try {
-            server = new ServerHelloWorld();
-            future = server.doAccept(9998,new ServerHelloWorldHandler());
+            server = new ServerFixedLength();
+            future = server.doAccept(9999);
             System.out.println("server started");
             future.channel().closeFuture().sync();
         } catch (Exception e) {

@@ -1,7 +1,6 @@
-package com.wj01.netty;
+package com.wj03.specialendcharacter;
 
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,28 +17,20 @@ import io.netty.channel.SimpleChannelInboundHandler;
  *         });
  */
 @ChannelHandler.Sharable
-public class ServerHelloWorldHandler extends SimpleChannelInboundHandler {
+public class SeverDelimiterHandler extends SimpleChannelInboundHandler {
 
-    /**
-     * @param ctx  上下文对象，其中包含客户端建立连接的所有资源
-     * @throws Exception
-     */
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //msg 获取到的数据，是一个换冲
-        ByteBuf readBuff = (ByteBuf) msg;
-        byte[] tempDatas = new byte[readBuff.readableBytes()];
-        readBuff.readBytes(tempDatas);
-        String message = new String(tempDatas,"utf-8");
-        System.out.println("from client " + message);
-        if ("exit".equals(message)) {
-            ctx.close();
-            return;
-        }
-
-        String line = "server message to client";
+        System.out.println("server accept " + msg.toString());
+        String line = "server msg $E$ test delimiter handler! $E$ second message $E$";
         //写操作自动释放内存，避免内存溢出问题
-        ctx.writeAndFlush(Unpooled.copiedBuffer(line.getBytes()));
-        //注意：如果调用的是write方法，不会刷新缓冲，缓冲中的数据不会发送到客户端，必须再次调用flush方法
-//        ctx.flush();
+        ctx.writeAndFlush(Unpooled.copiedBuffer(line.getBytes("utf-8")));
+
+    }
+
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        ctx.close();
+        cause.printStackTrace();
     }
 }

@@ -16,6 +16,27 @@
            <!-- <version>5.0.0.Alpha2</version>-->
             <!--5这个版本目前不建议被使用-->
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.36.Final</version>
+        </dependency>
+        <!--jboss marshalling的依赖包-->
+        <!-- https://mvnrepository.com/artifact/org.jboss.marshalling/jboss-marshalling-river -->
+        <!--接收处理工具-->
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+            <version>1.4.11.Final</version>
+        </dependency>
+        <!--序列化处理工具-->
+        <!-- https://mvnrepository.com/artifact/org.jboss.marshalling/jboss-marshalling-serial -->
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-serial</artifactId>
+            <version>1.4.11.Final</version>
+        </dependency>
+
     </dependencies>
 
 </project>

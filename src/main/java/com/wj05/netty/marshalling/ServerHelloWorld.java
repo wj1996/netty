@@ -1,4 +1,4 @@
-package com.wj01.netty;
+package com.wj05.netty.marshalling;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -62,12 +62,11 @@ public class ServerHelloWorld {
          */
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             protected void initChannel(SocketChannel socketChannel) throws Exception {
+                socketChannel.pipeline().addLast(SerializableFactoryMarshalling.buildMarshallingDecoder());
+                socketChannel.pipeline().addLast(SerializableFactoryMarshalling.buildMarshallingEncoder());
                 socketChannel.pipeline().addLast(acceptorHandlers);
             }
         });
-        //bind方法，绑定监听端口的。ServerBootStrap可以绑定多个监听端口。多次调用bind方法即可
-        //sync  开始监听逻辑。返回一个ChannelFuture。返回结果代表的是监听成功后的一个对应的未来结果
-        //可以使用ChannelFuture实现后续的服务器和客户端的交互
         ChannelFuture future = bootstrap.bind(port).sync();
         return future;
     }

@@ -1,15 +1,22 @@
-package com.wj01.netty;
+package com.wj03.specialendcharacter;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.string.StringDecoder;
+
+import java.nio.charset.Charset;
 
 /**
  * 1.双线程组
  */
-public class ServerHelloWorld {
+public class ServerDelimiter {
 
     //监听线程组，监听客户端请求
     private EventLoopGroup acceptGroup = null;
@@ -19,7 +26,7 @@ public class ServerHelloWorld {
     private ServerBootstrap bootstrap = null;
 
 
-    public ServerHelloWorld() {
+    public ServerDelimiter() {
         init();
     }
 
@@ -62,7 +69,13 @@ public class ServerHelloWorld {
          */
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(acceptorHandlers);
+                //数据分割符
+                ByteBuf delimter = Unpooled.copiedBuffer("$E$".getBytes());
+                ChannelHandler[] handlers = new ChannelHandler[3];
+                handlers[0] = new DelimiterBasedFrameDecoder(1024,delimter);
+                handlers[1] = new StringDecoder(Charset.forName("UTF-8"));
+                handlers[2] = new SeverDelimiterHandler();
+                socketChannel.pipeline().addLast(handlers);
             }
         });
         //bind方法，绑定监听端口的。ServerBootStrap可以绑定多个监听端口。多次调用bind方法即可
@@ -83,10 +96,10 @@ public class ServerHelloWorld {
 
     public static void main(String[] args) {
         ChannelFuture future = null;
-        ServerHelloWorld server = null;
+        ServerDelimiter server = null;
         try {
-            server = new ServerHelloWorld();
-            future = server.doAccept(9998,new ServerHelloWorldHandler());
+            server = new ServerDelimiter();
+            future = server.doAccept(9999);
             System.out.println("server started");
             future.channel().closeFuture().sync();
         } catch (Exception e) {

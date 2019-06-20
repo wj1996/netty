@@ -1,8 +1,9 @@
-package com.wj01.netty;
+package com.wj05.netty.marshalling;
 
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import com.utils.GzipUtils;
+import com.utils.RequestMessage;
+import com.utils.ResponseMessage;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,21 +26,13 @@ public class ServerHelloWorldHandler extends SimpleChannelInboundHandler {
      * @throws Exception
      */
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //msg 获取到的数据，是一个换冲
-        ByteBuf readBuff = (ByteBuf) msg;
-        byte[] tempDatas = new byte[readBuff.readableBytes()];
-        readBuff.readBytes(tempDatas);
-        String message = new String(tempDatas,"utf-8");
-        System.out.println("from client " + message);
-        if ("exit".equals(message)) {
-            ctx.close();
-            return;
+        System.out.println("from client : ClassName - " + msg.getClass().getName() + " ; message : " + msg.toString());
+        if (msg instanceof RequestMessage) {
+            RequestMessage request = (RequestMessage) msg;
+            byte[] attachment = GzipUtils.unzip(request.getAttachment());
+            System.out.println(new String(attachment));
         }
-
-        String line = "server message to client";
-        //写操作自动释放内存，避免内存溢出问题
-        ctx.writeAndFlush(Unpooled.copiedBuffer(line.getBytes()));
-        //注意：如果调用的是write方法，不会刷新缓冲，缓冲中的数据不会发送到客户端，必须再次调用flush方法
-//        ctx.flush();
+        ResponseMessage response = new ResponseMessage(0L,"test response");
+        ctx.writeAndFlush(response);
     }
 }
